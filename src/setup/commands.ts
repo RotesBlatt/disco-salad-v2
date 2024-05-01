@@ -16,7 +16,7 @@ const loadCommands = async (): Promise<Collection<string, CommandExecutor>> => {
     logger.info(`Collecting command files from path: '${commandsFolderPath}'`);
     const commandFilesName = fs.readdirSync(commandsFolderPath).filter(file => file.endsWith('.ts'));
 
-    logger.info(`Loading ${commandFilesName.length} (/) commands`);
+    logger.info(`Trying to load ${commandFilesName.length} (/) commands`);
     for (let i = 0; i < commandFilesName.length; i++) {
         const command = (await import(`${commandsFolderPathImport}/${commandFilesName[i]}`)).default;
         if ('data' in command && 'execute' in command) {

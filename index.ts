@@ -18,7 +18,7 @@ const client = new ClientAdapter({
 });
 
 client.once(Events.ClientReady, async readyClient => {
-    logger.info(`${readyClient.user.tag} loaded successfully`);
+    logger.info(`Logged in as ${readyClient.user.tag}`);
     client.commandCollection = await loadCommands();
 });
 
@@ -52,4 +52,5 @@ client.on(Events.InteractionCreate, async interaction => {
     }
 });
 
+logger.info(`Logging into Discord Bot application`);
 client.login(process.env.DISCORD_BOT_TOKEN);
