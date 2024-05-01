@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "lib": ["ES2022"],
+        "module": "CommonJS",
+        "target": "ES2022",
+        "strict": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "typeRoots": ["./@types", "./node_modules/@types"]
+    },
+    "exclude": ["node_modules"],
+    "ts-node": {
+        "esm": true,
+        "experimentalSpecifierResolution": "node"
+    }
+}

@@ -1,0 +1,10 @@
+logs/
+node_modules/
+
+package-lock.json
+
+*.env
+.data
+.vscode
+
+test.js

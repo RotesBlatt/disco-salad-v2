@@ -1,0 +1,11 @@
+## TODO
+- Database for stats 
+- Error Handling (Communicate Audio playing Issues to the user)
+-> save channel information in order to communicate errors
+-> Pass error message as function return
+- Use embeds
+- Setup winston for exception handling 
+- Add requested by to song data
+- Commands:
+-> skip, stop, leave, join, queue, now playing
+-> expand play command to include youtube searches
