@@ -1,25 +1,25 @@
 import { APIEmbedField, EmbedBuilder } from "discord.js"
 import { EmbedColors, secondsToHHMMSS } from "./util";
-import { GuildManager } from "../util/guild_manager";
+import { InfoData } from "play-dl";
 
-export const addQueue = (guildManager: GuildManager, userIconUrl: string): EmbedBuilder => {
-    const currentSongInfo = guildManager.audioPlayer.getCurrentSong()?.video_details;
-    const songDuration = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongDuration())
+export const addQueue = (songInfo: InfoData, userIconUrl: string): EmbedBuilder => {
+    const songDetails = songInfo.video_details;
+    const songDuration = secondsToHHMMSS(songInfo.video_details.durationInSec);
 
     const fields: APIEmbedField[] = [
-        { name: 'Channel', value: currentSongInfo?.channel?.name!, inline: true },
+        { name: 'Channel', value: songDetails.channel?.name!, inline: true },
         { name: 'Song length', value: `${songDuration}`, inline: true },
     ];
 
     return new EmbedBuilder()
         .setColor(EmbedColors.SUCCESSFUL)
-        .setTitle(currentSongInfo?.title!)
+        .setTitle(songDetails.title!)
         .setAuthor({
             name: 'Added song',
             iconURL: userIconUrl
         })
-        .setURL(currentSongInfo?.url!)
-        .setThumbnail(currentSongInfo?.thumbnails[3].url!)
+        .setURL(songDetails.url!)
+        .setThumbnail(songDetails.thumbnails[3].url!)
         .addFields(fields)
         .setTimestamp();
 
