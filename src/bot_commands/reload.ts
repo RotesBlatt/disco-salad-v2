@@ -34,13 +34,11 @@ export default {
             if (error instanceof Error) {
                 logger.error(`Reloading command '${commandName}' failed with Error:`, error);
                 await interaction.reply(`There was an error while reloading a command \`${command.data.name}\`:\n\`${error.message}\``);
-                // Reinsert current command into list in case command there was an error loading the command
+                // Reinsert current command into list so that the command will be found after fixing the error
                 client.commandCollection.set(command.data.name, command);
                 return;
             }
         }
-
-
 
         logger.info(`Reloaded command '${command.data.name}'`);
         await interaction.reply(`Successfully reloaded command \`${command.data.name}\``);
