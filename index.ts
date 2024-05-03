@@ -3,8 +3,8 @@ import { Events, GatewayIntentBits, Guild } from "discord.js";
 
 import getLogger from "./src/setup/logging";
 import loadCommands from "./src/setup/commands";
-import { GuildManager } from "./src/util/guild_manager";
 import { ClientAdapter } from "./src/util/client_adapter";
+import { GuildManager } from "./src/util/guild_manager";
 
 dotenv.config();
 

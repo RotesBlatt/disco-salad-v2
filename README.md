@@ -7,5 +7,6 @@
 - Setup winston for exception handling 
 - Add requested by to song data
 - Commands:
--> skip, stop, leave, join, queue, now playing
--> expand play command to include youtube searches
+-> stop, leave, join, queue, now playing
+
+- Check if user is in voice channel

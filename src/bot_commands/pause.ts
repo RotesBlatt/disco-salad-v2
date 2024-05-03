@@ -26,7 +26,7 @@ export default {
         if (paused) {
             await interaction.reply('Paused playback');
         } else {
-            await interaction.reply({ embeds: [embed.errorOccurred('Pausing playback failed', client.user?.avatarURL()!)]});
+            await interaction.reply({ embeds: [embed.errorOccurred('Pausing playback failed', client.user?.avatarURL()!)] });
         }
     }
 }
