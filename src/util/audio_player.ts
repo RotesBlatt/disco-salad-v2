@@ -3,6 +3,7 @@ import { InfoData, stream_from_info } from "play-dl";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior } from "@discordjs/voice";
 
 const logger = getLogger();
+
 /**
  * Creates a Wrapper for an audio player.
  * 
@@ -78,10 +79,27 @@ export class AudioPlayerAdapter {
     }
 
     /**
+     * Skips the current playing song.
+     * @returns true: successfully skipped song false otherwise
+     */
+    public skipSong(): boolean {
+        // Stopping the player moves the player into the idle state which triggers the automatic playing of the next song
+        const skipped = this.player.stop();
+
+        if (!skipped) {
+            logger.warn('Skipping song failed, no song is currently playing');
+        } else {
+            logger.info('Skipping song');
+        }
+
+        return skipped;
+    }
+
+    /**
      * Adds the given song to the queue
      * @param songInfo Information about the song provided by play-dl.video_info()
      */
-    public addSongToQueue(songInfo: InfoData): void {
+    public addSong(songInfo: InfoData): void {
         this.songQueue.push(songInfo);
 
         logger.info(`Added '${songInfo.video_details.title}' to the queue`);
@@ -92,7 +110,7 @@ export class AudioPlayerAdapter {
      * @returns boolean
      */
     public isPlaying(): boolean {
-        return this.player.checkPlayable();
+        return this.currentPlayingSong != undefined;
     }
 
     /**
@@ -117,7 +135,12 @@ export class AudioPlayerAdapter {
         return Math.floor(this.resource.playbackDuration / 1000);
     }
 
-    public getCurrentSongDuration(): number {
+    /**
+     * Returns the total length of the current song in seconds
+     * 
+     * @returns song length in seconds 
+     */
+    public getCurrentSongLength(): number {
         if (!this.currentPlayingSong) {
             logger.warn('Trying to access song duration, bot no song is playing');
             return -1;
@@ -132,6 +155,7 @@ export class AudioPlayerAdapter {
      */
     private configureAudioPlayer(): void {
         this.player.on(AudioPlayerStatus.Idle, async () => {
+            // Get next song and start playing it
             const songInfo = this.songQueue.shift();
             if (!songInfo) {
                 logger.info('Leaving voicechannel because song queue is empty');
@@ -160,7 +184,6 @@ export class AudioPlayerAdapter {
     private async playSong(songInfo: InfoData): Promise<void> {
         const audioStream = await stream_from_info(songInfo, {
             quality: 0,
-            precache: 1,
         });
 
         this.resource = createAudioResource(audioStream.stream, {

@@ -6,7 +6,7 @@ export const currentSong = (guildManager: GuildManager, userIconUrl: string): Em
     const currentSongInfo = guildManager.audioPlayer.getCurrentSong()?.video_details;
 
     const songPlaybackTime = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongPlaybackTime());
-    const songDuration = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongDuration())
+    const songDuration = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongLength());
 
     const fields: APIEmbedField[] = [
         { name: 'Channel', value: currentSongInfo?.channel?.name!, inline: true },

@@ -1,6 +1,7 @@
 import embed from '../embeds/embed';
 import getLogger from "../setup/logging";
 import { ClientAdapter } from "../util/client_adapter";
+import { YoutubeHandler } from './handlers/youtube_handler';
 
 import playdl from 'play-dl';
 import { joinVoiceChannel } from "@discordjs/voice";
@@ -13,64 +14,56 @@ export default {
         .setName('play')
         .setDescription('Play a song from Youtube')
         .addStringOption(option => option
-            .setName('url')
-            .setDescription('Youtube video URL')
-        )
-        .addStringOption(option => option
             .setName('search')
-            .setDescription('Youtube search string')
+            .setDescription('Youtube URL or search input')
+            .setRequired(true)
         )
         .setDMPermission(false),
 
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
 
+        const searchOptionInput = interaction.options.getString('search', true);
+
         const client = interaction.client as ClientAdapter;
         const iconURL = client.user?.avatarURL()!;
 
-        const songURL = interaction.options.getString('url', false);
-        const searchString = interaction.options.getString('search', false);
-        if (!songURL && !searchString) {
-            logger.warn('No parameters given in order to play a song');
-            interaction.editReply({ embeds: [embed.errorOccurred('No URL or search input was provided', iconURL)] })
-            return;
-        }
 
         const guildId = interaction.guild?.id!;
-        const guildManager = client.guildManagerCollection.get(guildId);
-        if (!guildManager) {
-            logger.error('Found no guild manager');
-            await interaction.editReply({ embeds: [embed.errorOccurred('There was an error while executing your command', iconURL)] });
-            return;
-        }
+        // Always present, in index.ts we add a guildManager if not already in the collection
+        const guildManager = client.guildManagerCollection.get(guildId)!;
 
         const voiceChannel = interaction.guild?.members.cache.get(interaction.member?.user.id!)?.voice.channel!;
-        const connection = joinVoiceChannel({
+        joinVoiceChannel({
             channelId: voiceChannel.id,
             guildId: guildId,
             adapterCreator: interaction.guild?.voiceAdapterCreator!,
         });
 
+
         var songInfo = null;
-        if (songURL) {
-            songInfo = await playdl.video_info(songURL);
-            guildManager.audioPlayer.addSongToQueue(songInfo);
-        } else if (searchString) {
-            const searchResults = await playdl.search(searchString, {
-                limit: 1,
-            });
+        const inputType = await playdl.validate(searchOptionInput);
 
-            const searchResultUrl = searchResults.at(0)?.url;
-            //Check that a video was found for the given search string, otherwise there is no song to be played
-            if (!searchResultUrl) {
-                logger.warn(`Search for '${searchString}' failed, found no matching video on Youtube`);
-                interaction.editReply({ embeds: [embed.errorOccurred(`Searching for \`${searchString}\` resulted in nothing, try something else`, iconURL)] });
+        switch (inputType) {
+            case 'search':
+                songInfo = await YoutubeHandler.getInfoFromSearch(searchOptionInput);
+                // Searching for input string might result in no video found
+                if (!songInfo) {
+                    logger.warn(`Search for '${searchOptionInput}' failed, found no matching video on Youtube`);
+                    await interaction.editReply({ embeds: [embed.errorOccurred(`Searching for \`${searchOptionInput}\` resulted in nothing, try something else`, iconURL)] });
+                    return;
+                }
+                break;
+            case 'yt_video':
+                songInfo = await YoutubeHandler.getVideoInfoFromUrl(searchOptionInput);
+                break;
+            default:
+                logger.warn(`Search option '${searchOptionInput}' not recognized as valid input`);
+                await interaction.editReply({ embeds: [embed.errorOccurred('The search option was not a recognized input type', iconURL)] });
                 return;
-            }
-
-            songInfo = await playdl.video_info(searchResultUrl);
-            guildManager.audioPlayer.addSongToQueue(songInfo);
         }
+
+        guildManager.audioPlayer.addSong(songInfo);
 
         // Add to queue if there the player is playing a song, otherwise play the song which was just added
         if (guildManager.audioPlayer.isPlaying()) {
