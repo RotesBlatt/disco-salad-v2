@@ -9,4 +9,5 @@
 - Commands:
 -> stop, leave, join, queue, now playing
 
+- Check if audio quality can be improved without performance loss
 - Check if user is in voice channel

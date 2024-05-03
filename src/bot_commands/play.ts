@@ -28,22 +28,12 @@ export default {
         const client = interaction.client as ClientAdapter;
         const iconURL = client.user?.avatarURL()!;
 
-
         const guildId = interaction.guild?.id!;
         // Always present, in index.ts we add a guildManager if not already in the collection
         const guildManager = client.guildManagerCollection.get(guildId)!;
 
-        const voiceChannel = interaction.guild?.members.cache.get(interaction.member?.user.id!)?.voice.channel!;
-        joinVoiceChannel({
-            channelId: voiceChannel.id,
-            guildId: guildId,
-            adapterCreator: interaction.guild?.voiceAdapterCreator!,
-        });
-
-
         var songInfo = null;
         const inputType = await playdl.validate(searchOptionInput);
-
         switch (inputType) {
             case 'search':
                 songInfo = await YoutubeHandler.getInfoFromSearch(searchOptionInput);
@@ -64,6 +54,14 @@ export default {
         }
 
         guildManager.audioPlayer.addSong(songInfo);
+
+        // Join voice channel after successfully retrieving a song from the input
+        const voiceChannel = interaction.guild?.members.cache.get(interaction.member?.user.id!)?.voice.channel!;
+        joinVoiceChannel({
+            channelId: voiceChannel.id,
+            guildId: guildId,
+            adapterCreator: interaction.guild?.voiceAdapterCreator!,
+        });
 
         // Add to queue if there the player is playing a song, otherwise play the song which was just added
         if (guildManager.audioPlayer.isPlaying()) {
