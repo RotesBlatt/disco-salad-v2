@@ -7,7 +7,7 @@ const logger = getLogger();
 /**
  * Creates a Wrapper for an audio player.
  * 
- * Takes song information as Input and plays a stream from Youtube inside the connected voice channel.
+ * Takes a guildId as Input and plays an Audio stream inside the corresponding guilds connected voice channel.
  * Uses a song queue to store incoming songs to play
  */
 export class AudioPlayerAdapter {
@@ -17,6 +17,8 @@ export class AudioPlayerAdapter {
 
     private songQueue: InfoData[] = [];
     private currentPlayingSong: InfoData | undefined;
+
+    private loopCurrentSong: boolean = false;
 
     /**
      * Creates an audio player and configures it in a way, so that it can play songs inside of a queue
@@ -55,7 +57,7 @@ export class AudioPlayerAdapter {
         const paused = this.player.pause(true);
 
         if (!paused) {
-            logger.warn("Pausing playback failed because no song is playing");
+            logger.warn("Pausing playback failed because playback was already paused or no song is currently playing");
         } else {
             logger.info('Paused playback')
         }
@@ -70,7 +72,7 @@ export class AudioPlayerAdapter {
         const resumed = this.player.unpause();
 
         if (!resumed) {
-            logger.warn("Resuming playback failed because no song is playing");
+            logger.warn("Resuming playback failed because playback has not paused playing or no song is currently playing");
         } else {
             logger.info('Resumed playback');
         }
@@ -103,6 +105,24 @@ export class AudioPlayerAdapter {
         this.songQueue.push(songInfo);
 
         logger.info(`Added '${songInfo.video_details.title}' to the queue`);
+    }
+
+    /**
+     * Loop or stop looping the current playing song 
+     * 
+     * @returns true: song is now looping, false: song has stopped looping
+     */
+    public loopSong(): boolean {
+        this.loopCurrentSong = !this.loopCurrentSong;
+
+        const currentSongName = this.currentPlayingSong?.video_details.title;
+        if (this.loopCurrentSong) {
+            logger.info(`Looping '${currentSongName}'playing song`);
+        } else {
+            logger.info(`Stopped looping '${currentSongName}'`);
+        }
+
+        return this.loopCurrentSong;
     }
 
     /**
@@ -156,11 +176,11 @@ export class AudioPlayerAdapter {
     private configureAudioPlayer(): void {
         this.player.on(AudioPlayerStatus.Idle, async () => {
             // Get next song and start playing it
-            const songInfo = this.songQueue.shift();
+            const songInfo = this.getNextSong();
             if (!songInfo) {
                 logger.info('Leaving voicechannel because song queue is empty');
                 getVoiceConnection(this.guildId)!.disconnect();
-                this.currentPlayingSong = undefined;
+                this.clear();
             } else {
                 await this.playSong(songInfo);
             }
@@ -198,5 +218,29 @@ export class AudioPlayerAdapter {
         }
 
         this.currentPlayingSong = songInfo;
+    }
+
+    /**
+     * Retrieves the next song to be played. 
+     * If Looping is enabled, return the previous played song.
+     * Otherwise get the next song from the queue.
+     * 
+     * @returns InfoData Object if there is a next song, otherwise undefined
+     */
+    private getNextSong(): InfoData | undefined {
+        if (this.loopCurrentSong) {
+            return this.currentPlayingSong;
+        }
+
+        return this.songQueue.shift();
+    }
+
+    /**
+     * Clears the audio players configuration which was changed during runtime.
+     * Resets all configuration attributes to their standard value
+     */
+    private clear(): void {
+        this.currentPlayingSong = undefined;
+        this.loopCurrentSong = false;
     }
 }
