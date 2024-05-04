@@ -1,15 +1,15 @@
 import getLogger from "../setup/logging";
-import { InfoData, stream_from_info } from "play-dl";
+import { InfoData, stream, stream_from_info, YouTubeVideo } from "play-dl";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior } from "@discordjs/voice";
 import { User } from "./user_information";
 
 const logger = getLogger();
 
 export class SongData {
-    public infoData: InfoData;
+    public infoData: YouTubeVideo;
     public userInfo: User;
 
-    constructor(infoData: InfoData, requestedBy: User) {
+    constructor(infoData: YouTubeVideo, requestedBy: User) {
         this.infoData = infoData;
         this.userInfo = requestedBy;
     }
@@ -114,7 +114,17 @@ export class AudioPlayerAdapter {
     public addSong(songData: SongData): void {
         this.songQueue.push(songData);
 
-        logger.info(`Added '${songData.infoData.video_details.title}' to the queue`);
+        logger.info(`Added '${songData.infoData.title}' to the queue`);
+    }
+
+    /**
+     * Adds multiple songs at once to the song queue. Useful for playlist links
+     * @param songData Array of SongData elements
+     */
+    public addSongs(songData: SongData[]): void {
+        this.songQueue = this.songQueue.concat(songData);
+
+        logger.info(`Added '${songData.length}' songs to the queue`);
     }
 
     /**
@@ -125,7 +135,7 @@ export class AudioPlayerAdapter {
     public loopSong(): boolean {
         this.loopCurrentSong = !this.loopCurrentSong;
 
-        const currentSongName = this.currentPlayingSong?.infoData.video_details.title;
+        const currentSongName = this.currentPlayingSong?.infoData.title;
         if (this.loopCurrentSong) {
             logger.info(`Looping '${currentSongName}'playing song`);
         } else {
@@ -203,7 +213,7 @@ export class AudioPlayerAdapter {
             logger.warn('Trying to access song duration, bot no song is playing');
             return -1;
         }
-        return this.currentPlayingSong?.infoData.video_details.durationInSec;
+        return this.currentPlayingSong?.infoData.durationInSec;
     }
 
     /**
@@ -227,12 +237,12 @@ export class AudioPlayerAdapter {
 
         this.player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
             if (oldState.status == AudioPlayerStatus.Idle || oldState.status == AudioPlayerStatus.Buffering) {
-                logger.info(`Playing song '${this.currentPlayingSong?.infoData.video_details.title}'`);
+                logger.info(`Playing song '${this.currentPlayingSong?.infoData.title}'`);
             }
         })
 
         this.player.on('error', (error) => {
-            logger.error(`There was an error playing the current song '${this.currentPlayingSong?.infoData.video_details.title}'`, error);
+            logger.error(`There was an error playing the current song '${this.currentPlayingSong?.infoData.title}'`, error);
         });
     }
 
@@ -241,7 +251,7 @@ export class AudioPlayerAdapter {
      * @param songInfo Information about the song to be played
      */
     private async playSong(songInfo: SongData): Promise<void> {
-        const audioStream = await stream_from_info(songInfo.infoData, {
+        const audioStream = await stream(songInfo.infoData.url, {
             quality: 0,
         });
 

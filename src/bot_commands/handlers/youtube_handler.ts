@@ -1,4 +1,6 @@
-import { InfoData, search, video_info } from "play-dl";
+import { InfoData, playlist_info, search, video_info, YouTubePlayList } from "play-dl";
+import { User } from "../../util/user_information";
+import { SongData } from "../../util/audio_player";
 
 /**
  * Contains helper methods which are relevant to Youtube specific things
@@ -30,5 +32,33 @@ export class YoutubeHandler {
         }
 
         return this.getVideoInfoFromUrl(searchResultUrl);
+    }
+
+    /**
+     * Returns an array of Youtube video information for each video in the playlist
+     * 
+     * @param searchInput Link to a Youtube playlist
+     * @returns Array of InfoData objects containing each video in the playlist
+     */
+    public static async getInfoFromPlaylist(searchInput: string): Promise<YouTubePlayList> {
+        const playlistInfo = await playlist_info(searchInput, {
+            incomplete: true,
+        });
+
+        return playlistInfo;
+    }
+
+    public static async convertToSongData(playlist: YouTubePlayList, user: User): Promise<SongData[]> {
+        const allVideos = await playlist.all_videos();
+
+        const songDataArray: SongData[] = [];
+        allVideos.forEach((video) => {
+            songDataArray.push({
+                userInfo: user,
+                infoData: video,
+            })
+        });
+
+        return songDataArray;
     }
 }

@@ -10,7 +10,7 @@ export const showQueue = (guild_manager: GuildManager, showPage: number, clientI
 
     return new EmbedBuilder()
         .setColor(EmbedColors.SUCCESSFUL)
-        .setTitle('Songs in queue')
+        .setTitle('Song queue')
         .setFooter({
             text: `Page: ${showPage} | Song Loop: ${!isLooping ? '❌' : '✅'}`,
             iconURL: clientIconUrl,
@@ -45,7 +45,7 @@ const createSongQueueDescription = (guildManager: GuildManager, showPage: number
     var description = `__Now playing:__ \n ${formatSongDescription(currentSong!)}\n`;
 
     if (songQueue.length !== 0) {
-        description = description.concat('__Up next:__\n');
+        description = description.concat('\n__Up next:__');
     }
 
     // Show only 10 Elements in the queue because of discords character limit in embeds
@@ -57,14 +57,14 @@ const createSongQueueDescription = (guildManager: GuildManager, showPage: number
 
     var totalSongQueueLength = guildManager.audioPlayer.getCurrentSongLength() - guildManager.audioPlayer.getCurrentSongPlaybackTime();
     songQueue.forEach((song) => {
-        totalSongQueueLength += song.infoData.video_details.durationInSec;
+        totalSongQueueLength += song.infoData.durationInSec;
     })
 
-    description = description.concat(`\n **Songs in queue: ${songQueue.length} | Total playback time: ${secondsToHHMMSS(totalSongQueueLength)}**`);
+    description = description.concat(`\n**Songs in queue: ${songQueue.length} | Total playback time: ${secondsToHHMMSS(totalSongQueueLength)}**`);
 
     return description;
 }
 
 const formatSongDescription = (song: SongData): string => {
-    return `[${song.infoData.video_details.title}](${song.infoData.video_details.url}) | ${secondsToHHMMSS(song.infoData.video_details.durationInSec)} |  Requested by: ${song.userInfo.name}`;
+    return `[${song.infoData.title}](${song.infoData.url}) | ${secondsToHHMMSS(song.infoData.durationInSec)} |  Requested by: ${song.userInfo.name}`;
 }

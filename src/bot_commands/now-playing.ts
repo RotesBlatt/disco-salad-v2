@@ -24,7 +24,7 @@ export default {
             return;
         }
 
-        logger.info(`Showing current song information about song: '${currentSong?.infoData.video_details.title}'`);
+        logger.info(`Showing current song information about song: '${currentSong?.infoData.title}'`);
 
         await interaction.reply({ embeds: [embed.currentSong(guildManager, clientIconUrl)] });
     }

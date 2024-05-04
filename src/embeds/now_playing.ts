@@ -4,7 +4,7 @@ import { GuildManager } from "../util/guild_manager";
 
 export const currentSong = (guildManager: GuildManager, userIconUrl: string): EmbedBuilder => {
     const currentSong = guildManager.audioPlayer.getCurrentSong()!;
-    const currentSongInfo = currentSong.infoData.video_details;
+    const currentSongInfo = currentSong.infoData;
 
     const songPlaybackTime = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongPlaybackTime());
     const songDuration = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongLength());
