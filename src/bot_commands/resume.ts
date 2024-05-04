@@ -24,9 +24,9 @@ export default {
 
         const resumed = guildManager.audioPlayer.resumePlayback();
         if (resumed) {
-            await interaction.reply('Resumed playback');
+            await interaction.reply(':play_pause: **Resuming playback**');
         } else {
-            await interaction.reply({embeds: [embed.errorOccurred('Resuming playback failed', client.user?.avatarURL()!)]});
+            await interaction.reply({embeds: [embed.errorOccurred('Resuming playback failed because song is already playing', client.user?.avatarURL()!)]});
         }
     }
 }

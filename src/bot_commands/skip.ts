@@ -15,7 +15,7 @@ export default {
         const skipped = guildManager?.audioPlayer.skipSong();
 
         if (skipped) {
-            await interaction.reply('Skipped song');
+            await interaction.reply(':track_next: Skipped Song');
         } else {
             const iconURL = client.user?.avatarURL()!;
             await interaction.reply({ embeds: [embed.errorOccurred('Skipping song failed, because no song is currently playing', iconURL)] });

@@ -24,9 +24,9 @@ export default {
 
         const paused = guildManager.audioPlayer.pausePlayback();
         if (paused) {
-            await interaction.reply('Paused playback');
+            await interaction.reply(':pause_button: **Pausing playback**');
         } else {
-            await interaction.reply({ embeds: [embed.errorOccurred('Pausing playback failed', client.user?.avatarURL()!)] });
+            await interaction.reply({ embeds: [embed.errorOccurred('Pausing playback failed because song is already paused', client.user?.avatarURL()!)] });
         }
     }
 }

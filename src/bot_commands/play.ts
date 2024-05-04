@@ -63,7 +63,7 @@ export default {
             adapterCreator: interaction.guild?.voiceAdapterCreator!,
         });
 
-        // Add to queue if there the player is playing a song, otherwise play the song which was just added
+        // Add to queue if the player is playing a song, otherwise play the song which was just added
         if (guildManager.audioPlayer.isPlaying()) {
             await interaction.editReply({ embeds: [embed.addQueue(songInfo!, iconURL)] });
         } else {
