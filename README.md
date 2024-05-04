@@ -5,7 +5,6 @@
 - Setup winston for exception handling 
 -> also make file logging guild-specific
 - Commands:
--> stop, join
+-> stop, join, skip to index in song queue
 
-- Check if audio quality can be improved without performance loss
 - Check if user is in voice channel
