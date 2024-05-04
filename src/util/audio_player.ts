@@ -136,6 +136,16 @@ export class AudioPlayerAdapter {
     }
 
     /**
+     * Stops the playback and clears the song queue. Triggers a disconnect because the audio players idle state is disconnecting the bot
+     */
+    public stopPlayback(): void {
+        this.clear();
+        this.songQueue = [];
+
+        this.player.stop();
+    }
+
+    /**
      * Returns whether a song is playing (true) or not (false)
      * @returns boolean
      */
@@ -189,6 +199,7 @@ export class AudioPlayerAdapter {
             const songInfo = this.getNextSong();
             if (!songInfo) {
                 logger.info('Leaving voicechannel because song queue is empty');
+                // WARN: Triggers the leave commands disconnect call. Change stop command if this line is removed 
                 getVoiceConnection(this.guildId)!.disconnect();
                 this.clear();
             } else {
