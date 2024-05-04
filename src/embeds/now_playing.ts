@@ -11,7 +11,7 @@ export const currentSong = (guildManager: GuildManager, userIconUrl: string): Em
 
     const fields: APIEmbedField[] = [
         { name: 'Channel', value: currentSongInfo?.channel?.name!, inline: true },
-        { name: 'Remaining song duration', value: `${songPlaybackTime}/${songDuration}`, inline: true },
+        { name: 'Time played', value: `${songPlaybackTime}/${songDuration}`, inline: true },
     ];
 
     return new EmbedBuilder()
