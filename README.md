@@ -8,3 +8,4 @@
 -> stop, join, skip to index in song queue
 
 - Check if user is in voice channel
+- Offload execution of commands onto separate thread
