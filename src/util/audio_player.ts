@@ -1,9 +1,19 @@
 import getLogger from "../setup/logging";
 import { InfoData, stream_from_info } from "play-dl";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior } from "@discordjs/voice";
+import { User } from "./user_information";
 
 const logger = getLogger();
 
+export class SongData {
+    public infoData: InfoData;
+    public userInfo: User;
+
+    constructor(infoData: InfoData, requestedBy: User) {
+        this.infoData = infoData;
+        this.userInfo = requestedBy;
+    }
+}
 /**
  * Creates a Wrapper for an audio player.
  * 
@@ -15,8 +25,8 @@ export class AudioPlayerAdapter {
     private player: AudioPlayer;
     private resource: AudioResource | undefined;
 
-    private songQueue: InfoData[] = [];
-    private currentPlayingSong: InfoData | undefined;
+    private songQueue: SongData[] = [];
+    private currentPlayingSong: SongData | undefined;
 
     private loopCurrentSong: boolean = false;
 
@@ -99,12 +109,12 @@ export class AudioPlayerAdapter {
 
     /**
      * Adds the given song to the queue
-     * @param songInfo Information about the song provided by play-dl.video_info()
+     * @param songData Information about the song and the user who added the song
      */
-    public addSong(songInfo: InfoData): void {
-        this.songQueue.push(songInfo);
+    public addSong(songData: SongData): void {
+        this.songQueue.push(songData);
 
-        logger.info(`Added '${songInfo.video_details.title}' to the queue`);
+        logger.info(`Added '${songData.infoData.video_details.title}' to the queue`);
     }
 
     /**
@@ -115,7 +125,7 @@ export class AudioPlayerAdapter {
     public loopSong(): boolean {
         this.loopCurrentSong = !this.loopCurrentSong;
 
-        const currentSongName = this.currentPlayingSong?.video_details.title;
+        const currentSongName = this.currentPlayingSong?.infoData.video_details.title;
         if (this.loopCurrentSong) {
             logger.info(`Looping '${currentSongName}'playing song`);
         } else {
@@ -137,7 +147,7 @@ export class AudioPlayerAdapter {
      * Song information for the current playing song. If no song is playing, returns nothing
      * @returns currently playing song information
      */
-    public getCurrentSong(): InfoData | undefined {
+    public getCurrentSong(): SongData | undefined {
         return this.currentPlayingSong;
     }
 
@@ -165,7 +175,7 @@ export class AudioPlayerAdapter {
             logger.warn('Trying to access song duration, bot no song is playing');
             return -1;
         }
-        return this.currentPlayingSong?.video_details.durationInSec;
+        return this.currentPlayingSong?.infoData.video_details.durationInSec;
     }
 
     /**
@@ -188,12 +198,12 @@ export class AudioPlayerAdapter {
 
         this.player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
             if (oldState.status == AudioPlayerStatus.Idle || oldState.status == AudioPlayerStatus.Buffering) {
-                logger.info(`Playing song '${this.currentPlayingSong?.video_details.title}'`);
+                logger.info(`Playing song '${this.currentPlayingSong?.infoData.video_details.title}'`);
             }
         })
 
         this.player.on('error', (error) => {
-            logger.error(`There was an error playing the current song '${this.currentPlayingSong?.video_details.title}'`, error);
+            logger.error(`There was an error playing the current song '${this.currentPlayingSong?.infoData.video_details.title}'`, error);
         });
     }
 
@@ -201,8 +211,8 @@ export class AudioPlayerAdapter {
      * Creates a resource based on the given song information and starts playing the song. Subscribes the current voice connection to the the player  
      * @param songInfo Information about the song to be played
      */
-    private async playSong(songInfo: InfoData): Promise<void> {
-        const audioStream = await stream_from_info(songInfo, {
+    private async playSong(songInfo: SongData): Promise<void> {
+        const audioStream = await stream_from_info(songInfo.infoData, {
             quality: 0,
         });
 
@@ -227,7 +237,7 @@ export class AudioPlayerAdapter {
      * 
      * @returns InfoData Object if there is a next song, otherwise undefined
      */
-    private getNextSong(): InfoData | undefined {
+    private getNextSong(): SongData | undefined {
         if (this.loopCurrentSong) {
             return this.currentPlayingSong;
         }

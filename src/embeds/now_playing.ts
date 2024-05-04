@@ -3,7 +3,8 @@ import { EmbedColors, secondsToHHMMSS } from "./util";
 import { GuildManager } from "../util/guild_manager";
 
 export const currentSong = (guildManager: GuildManager, userIconUrl: string): EmbedBuilder => {
-    const currentSongInfo = guildManager.audioPlayer.getCurrentSong()?.video_details;
+    const currentSong = guildManager.audioPlayer.getCurrentSong()!;
+    const currentSongInfo = currentSong.infoData.video_details;
 
     const songPlaybackTime = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongPlaybackTime());
     const songDuration = secondsToHHMMSS(guildManager.audioPlayer.getCurrentSongLength());
@@ -23,6 +24,10 @@ export const currentSong = (guildManager: GuildManager, userIconUrl: string): Em
         .setURL(currentSongInfo?.url!)
         .setThumbnail(currentSongInfo?.thumbnails[3].url!)
         .addFields(fields)
+        .setFooter({
+            text: `Requested by: ${currentSong.userInfo.name}`,
+            iconURL: currentSong.userInfo.iconUrl,
+        })
         .setTimestamp();
 
 }

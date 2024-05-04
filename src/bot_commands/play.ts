@@ -6,6 +6,8 @@ import { YoutubeHandler } from './handlers/youtube_handler';
 import playdl from 'play-dl';
 import { joinVoiceChannel } from "@discordjs/voice";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { SongData } from '../util/audio_player';
+import { User } from '../util/user_information';
 
 const logger = getLogger();
 
@@ -53,7 +55,8 @@ export default {
                 return;
         }
 
-        guildManager.audioPlayer.addSong(songInfo);
+        const songData = new SongData(songInfo, new User(interaction.user.displayName, interaction.user.avatarURL()!));
+        guildManager.audioPlayer.addSong(songData);
 
         // Join voice channel after successfully retrieving a song from the input
         const voiceChannel = interaction.guild?.members.cache.get(interaction.member?.user.id!)?.voice.channel!;
@@ -65,7 +68,7 @@ export default {
 
         // Add to queue if the player is playing a song, otherwise play the song which was just added
         if (guildManager.audioPlayer.isPlaying()) {
-            await interaction.editReply({ embeds: [embed.addQueue(songInfo!, iconURL)] });
+            await interaction.editReply({ embeds: [embed.addQueue(songData!, iconURL)] });
         } else {
             await guildManager.audioPlayer.startPlaying();
             await interaction.editReply({ embeds: [embed.currentSong(guildManager, iconURL)] });

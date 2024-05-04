@@ -1,10 +1,10 @@
 import { APIEmbedField, EmbedBuilder } from "discord.js"
 import { EmbedColors, secondsToHHMMSS } from "./util";
-import { InfoData } from "play-dl";
+import { SongData } from "../util/audio_player";
 
-export const addQueue = (songInfo: InfoData, userIconUrl: string): EmbedBuilder => {
-    const songDetails = songInfo.video_details;
-    const songDuration = secondsToHHMMSS(songInfo.video_details.durationInSec);
+export const addQueue = (songData: SongData, userIconUrl: string): EmbedBuilder => {
+    const songDetails = songData.infoData.video_details;
+    const songDuration = secondsToHHMMSS(songData.infoData.video_details.durationInSec);
 
     const fields: APIEmbedField[] = [
         { name: 'Channel', value: songDetails.channel?.name!, inline: true },
@@ -21,6 +21,10 @@ export const addQueue = (songInfo: InfoData, userIconUrl: string): EmbedBuilder 
         .setURL(songDetails.url!)
         .setThumbnail(songDetails.thumbnails[3].url!)
         .addFields(fields)
+        .setFooter({
+            text: `Requested by: ${songData.userInfo.name}`,
+            iconURL: songData.userInfo.iconUrl,
+        })
         .setTimestamp();
 
 }
