@@ -154,6 +154,24 @@ export class AudioPlayerAdapter {
     }
 
     /**
+     * Returns whether the current playing song is looping
+     * 
+     * @returns true: current song loops, otherwise false
+     */
+    public isCurrentSongLooping(): boolean {
+        return this.loopCurrentSong;
+    }
+
+    /**
+     * Returns the song queue
+     * 
+     * @returns Array of SongData elements 
+     */
+    public getSongQueue(): SongData[] {
+        return this.songQueue;
+    }
+
+    /**
      * Song information for the current playing song. If no song is playing, returns nothing
      * @returns currently playing song information
      */
