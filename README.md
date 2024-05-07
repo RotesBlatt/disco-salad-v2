@@ -5,7 +5,7 @@
 - Setup winston for exception handling 
 -> also make file logging guild-specific
 - Commands:
--> stop, join, skip to index in song queue
+-> stop, join
 
 - Check if user is in voice channel
 - Offload execution of commands onto separate thread
