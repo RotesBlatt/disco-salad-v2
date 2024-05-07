@@ -46,6 +46,7 @@ client.on(Events.InteractionCreate, async interaction => {
         if (interaction.replied || interaction.deferred) {
             await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
         } else {
+            console.log(error); // FIXME: Remove line, should not print error to console  
             await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
         }
         logger.error(`Execution of command '${interaction.commandName}' in guild '${interaction.guild?.name}' failed. Error: `, error);

@@ -91,10 +91,43 @@ export class AudioPlayerAdapter {
     }
 
     /**
-     * Skips the current playing song.
+     * Skips the current playing song. Even if song looping is enabled, skip to the next song in the queue
+     * 
      * @returns true: successfully skipped song false otherwise
      */
     public skipSong(): boolean {
+        // In getNextSong() if song looping is enabled, the current song is returned
+        if (this.loopCurrentSong) {
+            this.currentPlayingSong = this.songQueue.shift();
+        }
+
+        return this.skipToNextSongInQueue();
+    }
+
+    /**
+     * Skips songs up to an specified index (exclusive index). If given index is out of bounds no song will be skipped and `false` is returned
+     * 
+     * @param songIndex song queue index
+     * @returns true: song successfully skipped, otherwise false
+     */
+    public skipToSong(songIndex: number): boolean {
+        if (songIndex < 0 || songIndex > this.songQueue.length - 1) {
+            logger.warn(`Skipping song to specific index failed, index is out of bounds: ${songIndex}`);
+            return false;
+        }
+
+        for (let i = 0; i < songIndex; i++) {
+            this.songQueue.shift();
+        }
+        return this.skipToNextSongInQueue();
+    }
+
+    /**
+     * Skips the current playing song by stopping the audio player which triggers the automatic next song retrieval
+     * 
+     * @returns true: song skipped successfully, otherwise false
+     */
+    private skipToNextSongInQueue(): boolean {
         // Stopping the player moves the player into the idle state which triggers the automatic playing of the next song
         const skipped = this.player.stop();
 
