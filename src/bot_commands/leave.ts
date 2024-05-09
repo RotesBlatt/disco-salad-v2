@@ -1,10 +1,8 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import getLogger from "../setup/logging";
+import { getGuildLogger } from "../setup/logging";
 import embed from "../embeds/embed";
 import { ClientAdapter } from "../util/client_adapter";
-
-const logger = getLogger();
 
 export default {
     data: new SlashCommandBuilder()
@@ -13,8 +11,10 @@ export default {
         .setDMPermission(false),
     async execute(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as ClientAdapter;
-        const voiceConnection = getVoiceConnection(interaction.guild?.id!);
+        const guildId = interaction.guild?.id!;
+        const voiceConnection = getVoiceConnection(guildId);
 
+        const logger = getGuildLogger(guildId);
 
         if (!voiceConnection) {
             logger.warn('Leaving voice channel failed, not connected to voice channel');

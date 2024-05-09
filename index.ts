@@ -1,14 +1,15 @@
+import winston from "winston";
 import * as dotenv from "dotenv";
-import { Events, GatewayIntentBits, Guild } from "discord.js";
+import { Events, GatewayIntentBits } from "discord.js";
 
-import getLogger from "./src/setup/logging";
 import loadCommands from "./src/setup/commands";
-import { ClientAdapter } from "./src/util/client_adapter";
 import { GuildManager } from "./src/util/guild_manager";
+import { ClientAdapter } from "./src/util/client_adapter";
+import { createGuildLogger, createGuildLoggerOptions } from "./src/setup/logging";
 
 dotenv.config();
 
-const logger = getLogger();
+const logger = createGuildLogger('main_application_logger');
 
 const client = new ClientAdapter({
     intents: [
@@ -25,12 +26,17 @@ client.once(Events.ClientReady, async readyClient => {
 
 client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
+    if (!interaction.guild) return;
 
     const currentClient = interaction.client as ClientAdapter;
 
-    const guildId = interaction.guild?.id!;
+    const guildId = interaction.guild.id;
     if (!currentClient.guildManagerCollection.get(guildId)) {
         currentClient.guildManagerCollection.set(guildId, new GuildManager(guildId));
+    }
+
+    if (!winston.loggers.has(guildId)) {
+        winston.loggers.add(guildId, createGuildLoggerOptions(guildId));
     }
 
     const command = currentClient.commandCollection.get(interaction.commandName);
