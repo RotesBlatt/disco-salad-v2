@@ -1,4 +1,4 @@
-import getLogger from "./logging";
+import { getGuildLogger } from "./logging";
 import { CommandExecutor } from "../util/client_adapter";
 
 import path from "path";
@@ -6,7 +6,7 @@ import fs from "node:fs";
 import { Collection } from "discord.js";
 
 
-const logger = getLogger();
+const logger = getGuildLogger('main_application_logger');
 
 const loadCommands = async (): Promise<Collection<string, CommandExecutor>> => {
     const commands = new Collection<string, CommandExecutor>();
