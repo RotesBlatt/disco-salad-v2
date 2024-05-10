@@ -15,7 +15,8 @@ export default {
 
     async execute(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as ClientAdapter;
-        const guildManager = client.guildManagerCollection.get(interaction.guild?.id!);
+        const guildId = interaction.guild?.id!;
+        const guildManager = client.guildManagerCollection.get(guildId);
 
         const skipToOption = interaction.options.getInteger('to', false) ?? 0;
 

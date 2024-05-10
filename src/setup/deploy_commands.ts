@@ -1,4 +1,4 @@
-import getLogger from "./logging";
+import { getGuildLogger } from "./logging";
 
 import fs from "node:fs";
 import path from "node:path";
@@ -8,7 +8,7 @@ import { REST, Routes, SlashCommandBuilder } from "discord.js";
 
 dotenv.config();
 
-const logger = getLogger();
+const logger = getGuildLogger('main_application_logger');
 
 const excludeFromGlobalCommands = ['reload.ts'];
 

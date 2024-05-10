@@ -1,4 +1,4 @@
-import getLogger from "../setup/logging";
+import { getGuildLogger } from "../setup/logging";
 import { ClientAdapter, CommandExecutor } from "../util/client_adapter";
 
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
@@ -14,7 +14,7 @@ export default {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
-        const logger = getLogger();
+        const logger = getGuildLogger(interaction.guild?.id!);
         const commandName = interaction.options.getString('command', true).toLowerCase();
         const client = interaction.client as ClientAdapter;
         const command = client.commandCollection.get(commandName);

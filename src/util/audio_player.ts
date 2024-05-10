@@ -1,9 +1,8 @@
-import getLogger from "../setup/logging";
+import { getGuildLogger } from "../setup/logging";
 import { InfoData, stream, stream_from_info, YouTubeVideo } from "play-dl";
 import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior } from "@discordjs/voice";
 import { User } from "./user_information";
-
-const logger = getLogger();
+import { Logger } from "winston";
 
 export class SongData {
     public infoData: YouTubeVideo;
@@ -30,12 +29,15 @@ export class AudioPlayerAdapter {
 
     private loopCurrentSong: boolean = false;
 
+    private logger: Logger;
+
     /**
      * Creates an audio player and configures it in a way, so that it can play songs inside of a queue
      * @param guildId The ID of the guild this adapter belongs to. Used for retrieving the current voice Channel in which the bot is in
      */
     constructor(guildId: string) {
         this.guildId = guildId;
+        this.logger = getGuildLogger(guildId);
 
         this.player = createAudioPlayer({
             behaviors: {
@@ -52,11 +54,11 @@ export class AudioPlayerAdapter {
     public async startPlaying(): Promise<void> {
         const nextSong = this.songQueue.shift();
         if (!nextSong) {
-            logger.warn('Tried to start playing even tho no songs are in the queue');
+            this.logger.warn('Tried to start playing even tho no songs are in the queue');
             return;
         }
 
-        logger.info('Starting playback of Songs');
+        this.logger.info('Starting playback of Songs');
         await this.playSong(nextSong);
     }
 
@@ -67,9 +69,9 @@ export class AudioPlayerAdapter {
         const paused = this.player.pause(true);
 
         if (!paused) {
-            logger.warn("Pausing playback failed because playback was already paused or no song is currently playing");
+            this.logger.warn("Pausing playback failed because playback was already paused or no song is currently playing");
         } else {
-            logger.info('Paused playback')
+            this.logger.info('Paused playback')
         }
 
         return paused;
@@ -82,9 +84,9 @@ export class AudioPlayerAdapter {
         const resumed = this.player.unpause();
 
         if (!resumed) {
-            logger.warn("Resuming playback failed because playback has not paused playing or no song is currently playing");
+            this.logger.warn("Resuming playback failed because playback has not paused playing or no song is currently playing");
         } else {
-            logger.info('Resumed playback');
+            this.logger.info('Resumed playback');
         }
 
         return resumed;
@@ -112,7 +114,7 @@ export class AudioPlayerAdapter {
      */
     public skipToSong(songIndex: number): boolean {
         if (songIndex < 0 || songIndex > this.songQueue.length - 1) {
-            logger.warn(`Skipping song to specific index failed, index is out of bounds: ${songIndex}`);
+            this.logger.warn(`Skipping song to specific index failed, index is out of bounds: ${songIndex}`);
             return false;
         }
 
@@ -132,9 +134,9 @@ export class AudioPlayerAdapter {
         const skipped = this.player.stop();
 
         if (!skipped) {
-            logger.warn('Skipping song failed, no song is currently playing');
+            this.logger.warn('Skipping song failed, no song is currently playing');
         } else {
-            logger.info('Skipping song');
+            this.logger.info('Skipping song');
         }
 
         return skipped;
@@ -147,7 +149,7 @@ export class AudioPlayerAdapter {
     public addSong(songData: SongData): void {
         this.songQueue.push(songData);
 
-        logger.info(`Added '${songData.infoData.title}' to the queue`);
+        this.logger.info(`Added '${songData.infoData.title}' to the queue`);
     }
 
     /**
@@ -157,7 +159,7 @@ export class AudioPlayerAdapter {
     public addSongs(songData: SongData[]): void {
         this.songQueue = this.songQueue.concat(songData);
 
-        logger.info(`Added '${songData.length}' songs to the queue`);
+        this.logger.info(`Added '${songData.length}' songs to the queue`);
     }
 
     /**
@@ -170,9 +172,9 @@ export class AudioPlayerAdapter {
 
         const currentSongName = this.currentPlayingSong?.infoData.title;
         if (this.loopCurrentSong) {
-            logger.info(`Looping '${currentSongName}'playing song`);
+            this.logger.info(`Looping '${currentSongName}'playing song`);
         } else {
-            logger.info(`Stopped looping '${currentSongName}'`);
+            this.logger.info(`Stopped looping '${currentSongName}'`);
         }
 
         return this.loopCurrentSong;
@@ -229,7 +231,7 @@ export class AudioPlayerAdapter {
      */
     public getCurrentSongPlaybackTime(): number {
         if (!this.resource) {
-            logger.warn('Trying to access playback duration, but no resource is present');
+            this.logger.warn('Trying to access playback duration, but no resource is present');
             return -1;
         }
 
@@ -243,7 +245,7 @@ export class AudioPlayerAdapter {
      */
     public getCurrentSongLength(): number {
         if (!this.currentPlayingSong) {
-            logger.warn('Trying to access song duration, bot no song is playing');
+            this.logger.warn('Trying to access song duration, bot no song is playing');
             return -1;
         }
         return this.currentPlayingSong?.infoData.durationInSec;
@@ -259,7 +261,7 @@ export class AudioPlayerAdapter {
             // Get next song and start playing it
             const songInfo = this.getNextSong();
             if (!songInfo) {
-                logger.info('Leaving voicechannel because song queue is empty');
+                this.logger.info('Leaving voicechannel because song queue is empty');
                 // WARN: Triggers the leave commands disconnect call. Change stop command if this line is removed 
                 getVoiceConnection(this.guildId)!.disconnect();
                 this.clear();
@@ -270,12 +272,12 @@ export class AudioPlayerAdapter {
 
         this.player.on(AudioPlayerStatus.Playing, (oldState, newState) => {
             if (oldState.status == AudioPlayerStatus.Idle || oldState.status == AudioPlayerStatus.Buffering) {
-                logger.info(`Playing song '${this.currentPlayingSong?.infoData.title}'`);
+                this.logger.info(`Playing song '${this.currentPlayingSong?.infoData.title}'`);
             }
         })
 
         this.player.on('error', (error) => {
-            logger.error(`There was an error playing the current song '${this.currentPlayingSong?.infoData.title}'`, error);
+            this.logger.error(`There was an error playing the current song '${this.currentPlayingSong?.infoData.title}'`, error);
         });
     }
 
@@ -296,7 +298,7 @@ export class AudioPlayerAdapter {
 
         const subscription = getVoiceConnection(this.guildId)!.subscribe(this.player);
         if (!subscription) {
-            logger.warn('Subscribing to player was unsuccessful');
+            this.logger.warn('Subscribing to player was unsuccessful');
         }
 
         this.currentPlayingSong = songInfo;

@@ -3,7 +3,7 @@
 - Error Handling (Communicate Audio playing Issues to the user)
 -> save channel information in order to communicate errors
 - Setup winston for exception handling 
--> also make file logging guild-specific
+=> Wait for answer on GitHub, possible error found (https://github.com/winstonjs/winston/issues/2462)
 - Commands:
 -> stop, join
 

@@ -1,5 +1,5 @@
 import embed from '../embeds/embed';
-import getLogger from "../setup/logging";
+import { getGuildLogger } from "../setup/logging";
 import { ClientAdapter } from "../util/client_adapter";
 import { YoutubeHandler } from './handlers/youtube_handler';
 
@@ -8,8 +8,6 @@ import { joinVoiceChannel } from "@discordjs/voice";
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { SongData } from '../util/audio_player';
 import { User } from '../util/user_information';
-
-const logger = getLogger();
 
 export default {
     data: new SlashCommandBuilder()
@@ -24,13 +22,15 @@ export default {
 
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
+        const guildId = interaction.guild?.id!;
+        const logger = getGuildLogger(guildId);
 
         const searchOptionInput = interaction.options.getString('search', true);
 
         const client = interaction.client as ClientAdapter;
         const iconURL = client.user?.avatarURL()!;
 
-        const guildId = interaction.guild?.id!;
+
         // Always present, in index.ts we add a guildManager if not already in the collection
         const guildManager = client.guildManagerCollection.get(guildId)!;
 

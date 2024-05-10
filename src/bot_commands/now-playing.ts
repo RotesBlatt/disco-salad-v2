@@ -1,9 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { ClientAdapter } from "../util/client_adapter";
-import getLogger from "../setup/logging";
+import { getGuildLogger } from "../setup/logging";
 import embed from "../embeds/embed";
 
-const logger = getLogger();
 
 export default {
     data: new SlashCommandBuilder()
@@ -13,7 +12,10 @@ export default {
 
     async execute(interaction: ChatInputCommandInteraction) {
         const client = interaction.client as ClientAdapter;
-        const guildManager = client.guildManagerCollection.get(interaction.guild?.id!)!;
+        const guildId = interaction.guild?.id!;
+        const guildManager = client.guildManagerCollection.get(guildId)!;
+
+        const logger = getGuildLogger(guildId);
 
         const clientIconUrl = client.user?.avatarURL()!;
 

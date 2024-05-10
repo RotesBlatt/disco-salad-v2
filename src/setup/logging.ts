@@ -1,4 +1,4 @@
-import winston, { level } from "winston";
+import winston, { level, Logger, LoggerOptions } from "winston";
 
 const consoleLogFormat = winston.format.printf((info) => {
     const date = new Date();
@@ -10,35 +10,42 @@ const errorFileFormatter = winston.format.combine(
     winston.format.json(),
 );
 
-const logger = winston.createLogger({
-    level: 'info',
-    exitOnError: false,
-    format: winston.format.errors({
-        stack: true,
-    }),
-    transports: [
-        new winston.transports.File({
-            level: 'error',
-            dirname: 'logs',
-            filename: 'error.log',
-            format: errorFileFormatter
-        }),
-        new winston.transports.File({
-            level: level,
-            dirname: 'logs',
-            filename: 'all_combined.log',
-            format: consoleLogFormat,
-        }),
-        new winston.transports.Console({
-            level: level,
-            format: winston.format.combine(
-                winston.format.colorize(),
-                consoleLogFormat,
-            )
-        }),
-    ],
-});
+export function createGuildLogger(guildId: string): Logger {
+    return winston.createLogger(createGuildLoggerOptions(guildId));
+}
 
-export default function getLogger() {
-    return logger;
+export const createGuildLoggerOptions = (guildId: string): LoggerOptions => {
+    const dirName = `logs/${guildId}`;
+    return {
+        level: 'info',
+        exitOnError: false,
+        format: winston.format.errors({
+            stack: true,
+        }),
+        transports: [
+            new winston.transports.Console({
+                level: level,
+                format: winston.format.combine(
+                    winston.format.colorize(),
+                    consoleLogFormat,
+                )
+            }),
+            new winston.transports.File({
+                level: level,
+                dirname: dirName,
+                filename: 'all_combined.log',
+                format: consoleLogFormat,
+            }),
+            new winston.transports.File({
+                level: 'error',
+                dirname: dirName,
+                filename: 'error.log',
+                format: errorFileFormatter
+            }),
+        ]
+    } as LoggerOptions;
+}
+
+export const getGuildLogger = (guildId: string): Logger => {
+    return winston.loggers.get(guildId, createGuildLoggerOptions(guildId));
 }
