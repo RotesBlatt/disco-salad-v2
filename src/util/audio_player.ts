@@ -1,8 +1,10 @@
-import { getGuildLogger } from "../setup/logging";
-import { InfoData, stream, stream_from_info, YouTubeVideo } from "play-dl";
-import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior } from "@discordjs/voice";
-import { User } from "./user_information";
+import { AudioPlayer, AudioPlayerStatus, AudioResource, createAudioPlayer, createAudioResource, getVoiceConnection, NoSubscriberBehavior, StreamType } from "@discordjs/voice";
+import { } from 'node:stream';
+import { YouTubeVideo } from "play-dl";
 import { Logger } from "winston";
+import ytdl from "ytdl-core";
+import { getGuildLogger } from "../setup/logging";
+import { User } from "./user_information";
 
 export class SongData {
     public infoData: YouTubeVideo;
@@ -286,12 +288,15 @@ export class AudioPlayerAdapter {
      * @param songInfo Information about the song to be played
      */
     private async playSong(songInfo: SongData): Promise<void> {
-        const audioStream = await stream(songInfo.infoData.url, {
-            quality: 0,
+        // TODO: const audioStream = await stream(songInfoData.url, {quality: 0});
+        const audioStream = await ytdl(songInfo.infoData.url, {
+            filter: 'audioonly',
+            liveBuffer: 30000,
+            highWaterMark: 1 << 22
         });
 
-        this.resource = createAudioResource(audioStream.stream, {
-            inputType: audioStream.type,
+        this.resource = createAudioResource(audioStream, {
+            inputType: StreamType.Arbitrary,
         });
 
         this.player.play(this.resource);
@@ -299,6 +304,7 @@ export class AudioPlayerAdapter {
         const subscription = getVoiceConnection(this.guildId)!.subscribe(this.player);
         if (!subscription) {
             this.logger.warn('Subscribing to player was unsuccessful');
+            return;
         }
 
         this.currentPlayingSong = songInfo;

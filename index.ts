@@ -1,11 +1,11 @@
-import winston from "winston";
-import * as dotenv from "dotenv";
 import { Events, GatewayIntentBits } from "discord.js";
+import * as dotenv from "dotenv";
+import winston from "winston";
 
 import loadCommands from "./src/setup/commands";
-import { GuildManager } from "./src/util/guild_manager";
-import { ClientAdapter } from "./src/util/client_adapter";
 import { createGuildLogger, createGuildLoggerOptions } from "./src/setup/logging";
+import { ClientAdapter } from "./src/util/client_adapter";
+import { GuildManager } from "./src/util/guild_manager";
 
 dotenv.config();
 

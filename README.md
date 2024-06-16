@@ -1,5 +1,6 @@
 ## TODO
 - Database for stats 
+-> Use MongoDB
 - Error Handling (Communicate Audio playing Issues to the user)
 -> save channel information in order to communicate errors
 - Setup winston for exception handling 

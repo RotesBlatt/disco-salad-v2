@@ -1,4 +1,4 @@
-import winston, { level, Logger, LoggerOptions } from "winston";
+import winston, { Logger, LoggerOptions } from "winston";
 
 const consoleLogFormat = winston.format.printf((info) => {
     const date = new Date();
@@ -24,14 +24,14 @@ export const createGuildLoggerOptions = (guildId: string): LoggerOptions => {
         }),
         transports: [
             new winston.transports.Console({
-                level: level,
+                level: 'info',
                 format: winston.format.combine(
                     winston.format.colorize(),
                     consoleLogFormat,
                 )
             }),
             new winston.transports.File({
-                level: level,
+                level: 'info',
                 dirname: dirName,
                 filename: 'all_combined.log',
                 format: consoleLogFormat,
